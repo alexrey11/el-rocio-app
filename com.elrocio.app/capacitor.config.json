@@ -7,6 +7,9 @@
       "launchAutoHide": true,
       "launchShowDuration": 2000,
       "backgroundColor": "#2e7d32"
+    },
+    "Filesystem": {
+      "androidIsPublicStorage": true
     }
   }
 }
