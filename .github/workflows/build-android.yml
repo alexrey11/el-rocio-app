@@ -35,7 +35,9 @@ jobs:
         java-version: '21'
 
     - name: Configurar Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
+      with:
+        packages: 'platform-tools'
 
     - name: Sincronizar Capacitor
       working-directory: ./com.elrocio.app
