@@ -89,7 +89,8 @@ body {
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 10px;
+    /* Reducido un poco para que quepan los botones */
 }
 
 .date-block {
@@ -236,6 +237,32 @@ body {
     font-size: 18px;
     font-weight: 700;
     color: #222;
+}
+
+/* =========================================
+   BUSCADOR
+   ========================================= */
+.search-bar {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: var(--sombra-suave);
+    gap: 10px;
+}
+
+.search-bar svg {
+    color: #999;
+}
+
+.search-bar input {
+    border: none;
+    outline: none;
+    font-size: 15px;
+    width: 100%;
+    background: transparent;
+    color: #333;
 }
 
 /* =========================================
@@ -712,7 +739,7 @@ input[type="date"] {
 }
 
 /* =========================================
-   RESPONSIVE (Tablet y móvil)
+   RESPONSIVE (Tablet y Móvil) - ¡AQUÍ ESTÁ LA MAGIA!
    ========================================= */
 @media (max-width: 768px) {
     .quick-stats {
@@ -726,28 +753,86 @@ input[type="date"] {
     .form-row {
         grid-template-columns: 1fr;
     }
+
+    /* 1. Convertir la tabla en Tarjetas en el celular */
+    .inventory-table {
+        min-width: auto;
+        /* Quitar el scroll horizontal forzado */
+    }
+
+    .inventory-table thead {
+        display: none;
+        /* Ocultar la cabecera de la tabla */
+    }
+
+    .inventory-table tr {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--gris-borde);
+    }
+
+    .inventory-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        border-bottom: 1px dashed #eee;
+        font-size: 14px;
+    }
+
+    .inventory-table td:last-child {
+        border-bottom: none;
+        padding-top: 15px;
+        justify-content: flex-end;
+    }
+
+    /* Mostrar la etiqueta (data-label) antes del valor en el celular */
+    .inventory-table td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #666;
+        text-transform: uppercase;
+        font-size: 11px;
+        letter-spacing: 0.5px;
+        margin-right: 10px;
+    }
+
+    /* Ajustes específicos para celdas con botones */
+    .inventory-table td[data-label="Entrada"],
+    .inventory-table td[data-label="Vender"],
+    .inventory-table td[data-label="Merma"] {
+        justify-content: flex-end;
+        /* Alinear los botones a la derecha */
+    }
+
+    /* El resumen en el celular */
+    .detailed-report .report-header,
+    .detailed-report .report-row {
+        grid-template-columns: 1.5fr 1fr 1fr;
+        /* Ajustar proporciones */
+        font-size: 13px;
+        padding: 10px;
+    }
 }
 
-/* Buscador */
-.search-bar {
+.brand-mark {
+    background-color: white;
+    color: var(--verde-principal);
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    background: white;
-    padding: 10px 15px;
-    border-radius: 10px;
-    box-shadow: var(--sombra-suave);
-    gap: 10px;
-}
-
-.search-bar svg {
-    color: #999;
-}
-
-.search-bar input {
-    border: none;
-    outline: none;
-    font-size: 15px;
-    width: 100%;
-    background: transparent;
-    color: #333;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 18px;
+    overflow: hidden;
+    /* Esto evita que la imagen se salga del cuadro */
+    padding: 2px;
+    /* Un pequeño margen interno para que no quede pegada al borde */
 }

@@ -1,8 +1,11 @@
-import { FormEvent, useMemo, useState, useRef } from 'react';
+import { FormEvent, useMemo, useState, useRef, useEffect } from 'react';
 import { db, Product, Sale, Waste } from './db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
+import { Capacitor } from '@capacitor/core';
 
 type IconName = 'cart' | 'shelf' | 'meat' | 'warehouse' | 'plus' | 'calendar' | 'close' | 'trend' | 'box' | 'money' | 'check' | 'trash' | 'send' | 'minus' | 'edit' | 'download' | 'upload' | 'search' | 'file-text';
 
@@ -19,6 +22,15 @@ const money = (value: number) => `$${value.toFixed(value % 1 === 0 ? 0 : 2)}`;
 const getTodayLocalString = () => {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+};
+
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve((reader.result as string).split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 };
 
 function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
@@ -217,21 +229,46 @@ function App() {
     }
   };
 
-  // --- FUNCIONES DE RESPALDO ---
+  // --- RESPALDO MULTIPLATAFORMA ---
   const exportBackup = async () => {
     const allProducts = await db.products.toArray();
     const allSales = await db.sales.toArray();
     const allWastes = await db.wastes.toArray();
     const backupData = { version: 1, date: new Date().toISOString(), products: allProducts, sales: allSales, wastes: allWastes };
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `elrocio_backup_${getTodayLocalString()}.json`);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    setNotice('Respaldo descargado.');
+    const dataStr = JSON.stringify(backupData);
+    const fileName = `elrocio_backup_${getTodayLocalString()}.json`;
+
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const result = await Filesystem.writeFile({
+          path: fileName,
+          data: dataStr,
+          directory: Directory.Cache,
+          encoding: Encoding.UTF8
+        });
+        await Share.share({
+          title: 'Respaldo El Rocío',
+          text: 'Aquí tienes tu respaldo de El Rocío.',
+          url: result.uri,
+          dialogTitle: 'Guardar o compartir respaldo'
+        });
+        setNotice('Respaldo compartido.');
+      } catch (err) {
+        console.error(err);
+        setNotice('Error al guardar el respaldo.');
+      }
+    } else {
+      const dataUri = "data:text/json;charset=utf-8," + encodeURIComponent(dataStr);
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataUri);
+      downloadAnchorNode.setAttribute("download", fileName);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      setNotice('Respaldo descargado.');
+    }
     setBackupOpen(false);
+    window.setTimeout(() => setNotice(''), 3000);
   };
 
   const importBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,6 +288,7 @@ function App() {
             await db.wastes.bulkAdd(data.wastes);
             setNotice('Datos restaurados con éxito.');
             setBackupOpen(false);
+            window.setTimeout(() => setNotice(''), 3000);
           }
         } else {
           setNotice('Archivo inválido.');
@@ -262,7 +300,7 @@ function App() {
     reader.readAsText(file);
   };
 
-  // --- GENERAR PDF (CATÁLOGO) ---
+  // --- GENERAR PDF (CATÁLOGO) CON LOGO ---
   const exportCatalogPDF = async () => {
     const allProducts = await db.products.toArray();
     if (allProducts.length === 0) {
@@ -272,24 +310,32 @@ function App() {
 
     const doc = new jsPDF();
 
-    // --- DISEÑO DEL PDF ---
+    // AQUÍ ESTÁ TU LOGO EN BASE64
+    const logoBase64 = "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";
+
     // Cabecera
-    doc.setFillColor(46, 125, 50); // Verde
+    doc.setFillColor(46, 125, 50);
     doc.rect(0, 0, 210, 40, 'F');
+
+    // Poner logo en el PDF si existe
+    if (logoBase64) {
+      try {
+        doc.addImage(logoBase64, 'PNG', 10, 5, 30, 30);
+      } catch (e) { console.error("Error al cargar logo en PDF", e); }
+    }
 
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.text('El Rocío', 15, 25);
+    doc.text('El Rocío', 50, 25);
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text('Catálogo de Productos', 15, 33);
+    doc.text('Catálogo de Productos', 50, 33);
     doc.text(`Actualizado: ${new Date().toLocaleDateString()}`, 150, 33);
 
     let startY = 50;
 
-    // Agrupar por módulos
     for (const mod of modules) {
       const modProducts = allProducts.filter(p => p.moduleId === mod.id);
 
@@ -320,10 +366,9 @@ function App() {
           }
         });
 
-        // @ts-ignore (para evitar error de tipado de jspdf-autotable)
+        // @ts-ignore
         startY = doc.lastAutoTable.finalY + 15;
 
-        // Si nos acercamos al final de la página, creamos una nueva
         if (startY > 250) {
           doc.addPage();
           startY = 20;
@@ -331,7 +376,6 @@ function App() {
       }
     }
 
-    // Pie de página
     const pageCount = doc.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
@@ -340,7 +384,29 @@ function App() {
       doc.text('Generado con El Rocío - Control de Inventario', 15, 290);
     }
 
-    doc.save(`Catalogo_El_Rocio_${getTodayLocalString()}.pdf`);
+    if (Capacitor.isNativePlatform()) {
+      const pdfBlob = doc.output('blob');
+      const base64 = await blobToBase64(pdfBlob);
+      try {
+        const result = await Filesystem.writeFile({
+          path: `Catalogo_El_Rocio_${getTodayLocalString()}.pdf`,
+          data: base64,
+          directory: Directory.Cache,
+        });
+
+        await Share.share({
+          title: 'Catálogo El Rocío',
+          text: 'Aquí tienes el catálogo de El Rocío.',
+          url: result.uri,
+          dialogTitle: 'Guardar o compartir catálogo'
+        });
+      } catch (err) {
+        setNotice('Error al generar PDF en el móvil.');
+      }
+    } else {
+      doc.save(`Catalogo_El_Rocio_${getTodayLocalString()}.pdf`);
+    }
+
     setNotice('Catálogo PDF generado.');
     window.setTimeout(() => setNotice(''), 3000);
   };
@@ -360,18 +426,18 @@ function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand-lockup">
-          <div className="brand-mark"><span>ER</span></div>
+          <div className="brand-mark">
+            <img src="/logo.png" alt="Logo El Rocío" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }} />
+          </div>
           <div><h1>El Rocío</h1><p>Control de inventario</p></div>
         </div>
         <div className="header-actions">
           <div className="date-block"><Icon name="calendar" size={19} /><span>{formattedDate}</span></div>
 
-          {/* BOTÓN DE EXPORTAR CATÁLOGO PDF */}
           <button className="icon-btn-blue" style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }} onClick={exportCatalogPDF} title="Exportar Catálogo PDF">
             <Icon name="file-text" size={20} />
           </button>
 
-          {/* BOTÓN DE RESPALDO */}
           <button className="icon-btn-blue" style={{ backgroundColor: 'rgba(255,255,255,0.15)', color: 'white' }} onClick={() => setBackupOpen(true)} title="Respaldo">
             <Icon name="download" size={20} />
           </button>
@@ -421,16 +487,16 @@ function App() {
                 ) : (
                   filteredProducts.map((product) => (
                     <tr key={product.id}>
-                      <td>
+                      <td data-label="Producto">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div className={`product-badge-sm ${product.accent}`}><Icon name="box" size={16} /></div>
                           <strong>{product.name}</strong>
                         </div>
                       </td>
-                      <td>{money(product.sale)}</td>
+                      <td data-label="Precio U.">{money(product.sale)}</td>
 
                       {showEntrada && (
-                        <td>
+                        <td data-label="Entrada">
                           <button className="cell-btn" onClick={() => openActionModal(product, 'entrada')}>
                             + {product.unit}
                           </button>
@@ -439,12 +505,12 @@ function App() {
 
                       {!isWarehouse && (
                         <>
-                          <td>
+                          <td data-label="Vender">
                             <button className="cell-btn sell" onClick={() => openActionModal(product, 'venta')}>
                               + Vender
                             </button>
                           </td>
-                          <td>
+                          <td data-label="Merma">
                             <button className="cell-btn merma" onClick={() => openActionModal(product, 'merma')}>
                               + Merma
                             </button>
@@ -452,8 +518,8 @@ function App() {
                         </>
                       )}
 
-                      <td><strong style={{ color: product.stock === 0 ? 'red' : '#2e7d32' }}>{product.stock.toLocaleString('es-CU', { maximumFractionDigits: 2 })}</strong> <small>{product.unit}</small></td>
-                      <td>
+                      <td data-label="Stock"><strong style={{ color: product.stock === 0 ? 'red' : '#2e7d32' }}>{product.stock.toLocaleString('es-CU', { maximumFractionDigits: 2 })}</strong> <small>{product.unit}</small></td>
+                      <td data-label="Acciones">
                         <div style={{ display: 'flex', gap: '5px' }}>
                           <button className="icon-btn-blue" onClick={() => openEditModal(product)} title="Editar"><Icon name="edit" size={18} /></button>
                           {isWarehouse ? (
@@ -487,7 +553,7 @@ function App() {
           <p className="modal-description">Descarga un archivo con toda tu información para guardarlo en un pendrive. Si algo pasa, puedes restaurarlo aquí.</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '20px' }}>
-            <button className="modal-primary" onClick={exportBackup}><Icon name="download" size={18} /> Exportar Datos (Descargar)</button>
+            <button className="modal-primary" onClick={exportBackup}><Icon name="download" size={18} /> Exportar Datos</button>
 
             <div style={{ borderTop: '1px solid #eee', paddingTop: '15px' }}>
               <p style={{ fontSize: '13px', color: '#666', marginBottom: '10px' }}>Restaurar desde un archivo:</p>
