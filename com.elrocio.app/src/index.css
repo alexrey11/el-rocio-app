@@ -836,3 +836,313 @@ input[type="date"] {
     padding: 2px;
     /* Un pequeño margen interno para que no quede pegada al borde */
 }
+
+/* =========================================
+   MÓDULO CARRITO (POS)
+   ========================================= */
+.pos-layout {
+    display: flex;
+    height: 100vh;
+    background-color: var(--gris-fondo);
+    overflow: hidden;
+}
+
+/* Catálogo (Izquierda) */
+.pos-catalog {
+    flex: 1.5;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border-right: 1px solid var(--gris-borde);
+    overflow-y: auto;
+}
+
+.pos-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.pos-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: white;
+    border: 1px solid var(--gris-borde);
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--gris-texto);
+}
+
+.pos-header h2 {
+    color: var(--verde-principal);
+    font-size: 24px;
+}
+
+.pos-search {
+    display: flex;
+    align-items: center;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: var(--sombra-suave);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.pos-search input {
+    border: none;
+    outline: none;
+    width: 100%;
+    font-size: 16px;
+}
+
+.pos-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.pos-filter-btn {
+    background: white;
+    border: 1px solid var(--gris-borde);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    color: var(--gris-texto);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.pos-filter-btn.active {
+    background: var(--verde-principal);
+    color: white;
+    border-color: var(--verde-principal);
+}
+
+.pos-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+}
+
+.pos-product-card {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: var(--sombra-suave);
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.pos-product-card:active {
+    transform: scale(0.97);
+}
+
+.pos-product-card.out-of-stock {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.pos-product-name {
+    font-weight: 700;
+    color: #333;
+    font-size: 15px;
+}
+
+.pos-product-price {
+    color: var(--verde-principal);
+    font-weight: 800;
+    font-size: 18px;
+}
+
+.pos-product-stock {
+    font-size: 11px;
+    color: #888;
+}
+
+.pos-out-of-stock-label {
+    position: absolute;
+    top: 10px;
+    right: -25px;
+    background: #d32f2f;
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 30px;
+    transform: rotate(45deg);
+}
+
+/* Ticket (Derecha) */
+.pos-ticket {
+    flex: 1;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.pos-ticket-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--gris-borde);
+    background: #f9f9f9;
+}
+
+.pos-ticket-header h3 {
+    font-size: 20px;
+    color: #333;
+}
+
+.pos-ticket-header span {
+    font-size: 13px;
+    color: #888;
+}
+
+.pos-ticket-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.pos-ticket-empty {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    text-align: center;
+}
+
+.pos-ticket-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    border-bottom: 1px dashed #eee;
+}
+
+.pos-ticket-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.pos-ticket-info span {
+    color: #666;
+}
+
+.pos-ticket-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pos-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0f0f0;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.pos-qty-controls button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: white;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.pos-qty-controls span {
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
+
+.pos-delete-btn {
+    background: none;
+    border: none;
+    color: #d32f2f;
+    cursor: pointer;
+}
+
+.pos-ticket-subtotal {
+    text-align: right;
+    font-weight: bold;
+    color: var(--verde-principal);
+    font-size: 15px;
+    margin-top: 5px;
+}
+
+.pos-ticket-footer {
+    padding: 20px;
+    border-top: 2px solid var(--gris-borde);
+    background: #f9f9f9;
+}
+
+.pos-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.pos-total strong {
+    font-size: 28px;
+    color: var(--verde-principal);
+}
+
+.pos-cobrar-btn {
+    width: 100%;
+    background-color: var(--verde-principal);
+    color: white;
+    border: none;
+    padding: 18px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.pos-cobrar-btn.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Responsive para el carrito en celular */
+@media (max-width: 768px) {
+    .pos-layout {
+        flex-direction: column;
+    }
+
+    .pos-catalog {
+        flex: 1;
+        border-right: none;
+        border-bottom: 1px solid var(--gris-borde);
+    }
+
+    .pos-ticket {
+        flex: 1;
+        box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
+    }
+}
