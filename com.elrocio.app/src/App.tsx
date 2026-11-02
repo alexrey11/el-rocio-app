@@ -427,7 +427,7 @@ function App() {
       <header className="topbar">
         <div className="brand-lockup">
           <div className="brand-mark">
-            <img src="/logo.png" alt="Logo El Rocío" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }} />
+            <img src="logo.png" alt="Logo El Rocío" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px' }} />
           </div>
           <div><h1>El Rocío</h1><p>Control de inventario</p></div>
         </div>
