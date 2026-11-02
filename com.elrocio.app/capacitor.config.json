@@ -1,10 +1,12 @@
 {
-  "appId": "com.example.app",
+  "appId": "com.elrocio.app",
   "appName": "El Rocio",
   "webDir": "dist",
   "plugins": {
     "SplashScreen": {
-      "launchAutoHide": false
+      "launchAutoHide": true,
+      "launchShowDuration": 2000,
+      "backgroundColor": "#2e7d32"
     }
   }
 }
