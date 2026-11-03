@@ -141,6 +141,16 @@ function App() {
       const target = (document.getElementById('target-module') as HTMLSelectElement).value;
       if (qty > selectedProduct.stock) { setNotice('No hay suficiente stock.'); return; }
 
+      await db.transfers.add({
+        productId: selectedProduct.id!,
+        productName: selectedProduct.name,
+        quantity: qty,
+        fromModule: 'almacen',
+        toModule: target,
+        date: new Date().toISOString(),
+        unit: selectedProduct.unit
+      });
+
       await db.products.update(selectedProduct.id!, { stock: selectedProduct.stock - qty });
       const existing = await db.products.where({ moduleId: target, name: selectedProduct.name }).first();
       if (existing) {
@@ -196,7 +206,7 @@ function App() {
     const allProducts = await db.products.toArray();
     const allSales = await db.sales.toArray();
     const allWastes = await db.wastes.toArray();
-    const backupData = { version: 1, date: new Date().toISOString(), products: allProducts, sales: allSales, wastes: allWastes };
+    const backupData = { version: 2, date: new Date().toISOString(), products: allProducts, sales: allSales, wastes: allWastes, transfers: await db.transfers.toArray() };
     const dataStr = JSON.stringify(backupData);
     const fileName = `elrocio_backup_${getTodayLocalString()}.json`;
 
@@ -245,9 +255,11 @@ function App() {
             await db.products.clear();
             await db.sales.clear();
             await db.wastes.clear();
+            await db.transfers.clear();
             await db.products.bulkAdd(data.products);
             await db.sales.bulkAdd(data.sales);
             await db.wastes.bulkAdd(data.wastes);
+            if (data.transfers) await db.transfers.bulkAdd(data.transfers);
             setNotice('Datos restaurados con éxito.');
             setBackupOpen(false);
             window.setTimeout(() => setNotice(''), 3000);
@@ -386,7 +398,10 @@ function App() {
           <div><h1>El Rocío</h1><p>Control de inventario</p></div>
         </div>
         <div className="header-actions">
-          <div className="date-block"><Icon name="calendar" size={19} /><span>{formattedDate}</span></div>
+          <div className="date-block" style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(255,255,255,0.15)', color: 'white', padding: '8px 16px', borderRadius: '20px', fontSize: '0.95rem', fontWeight: '500', whiteSpace: 'nowrap' }}>
+            <Icon name="calendar" size={19} />
+            <span>{formattedDate}</span>
+          </div>
 
           <button
             className="icon-btn-blue"
@@ -443,7 +458,6 @@ function App() {
             <table className="inventory-table">
               <thead>
                 <tr>
-                  {/* ORDEN EXACTO SEGÚN LA HOJA */}
                   <th>Producto</th>
                   {showEntrada && <th>Entrada</th>}
                   <th>Precio U.</th>
@@ -470,7 +484,6 @@ function App() {
                         </div>
                       </td>
 
-                      {/* ENTRADA (Va después del nombre, como en la hoja) */}
                       {showEntrada && (
                         <td data-label="Entrada">
                           <button className="cell-btn" onClick={() => openActionModal(product, 'entrada')}>
@@ -479,10 +492,8 @@ function App() {
                         </td>
                       )}
 
-                      {/* PRECIO U. */}
                       <td data-label="Precio U.">{money(product.sale)}</td>
 
-                      {/* CANT. VENTA Y MERMA */}
                       {!isWarehouse && (
                         <>
                           <td data-label="Vender">
