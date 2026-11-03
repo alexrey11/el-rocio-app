@@ -81,7 +81,6 @@ export default function Carrito() {
             return;
         }
 
-        // Validaciones para no romper la entrada
         if (key === '.' && pagoCon.includes('.')) return;
         if (key === '.' && pagoCon === '') {
             setPagoCon('0.');
@@ -117,7 +116,7 @@ export default function Carrito() {
                     total: item.product.sale * item.quantity,
                     profit: (item.product.sale - item.product.cost) * item.quantity,
                     date: new Date().toISOString(),
-                    moduleId: activeModule,
+                    moduleId: item.product.moduleId, // <-- CORREGIDO: Usa el módulo del producto, no el activo
                     unit: item.product.unit
                 });
 
@@ -138,7 +137,7 @@ export default function Carrito() {
         <div className="app-shell" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f5f5f5' }}>
 
             {/* HEADER DEL CARRITO */}
-            <header className="topbar" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 20px' }}>
+            <header className="topbar" style={{ display: 'flex', alignItems: 'center', gap: '15px', padding: '15px 20px', flexShrink: 0 }}>
                 <button onClick={() => navigate('/')} style={{ background: 'none', border: 'none', color: 'white', cursor: 'pointer' }}>
                     <IconBack />
                 </button>
@@ -151,12 +150,12 @@ export default function Carrito() {
                 </div>
             </header>
 
-            {/* SELECTOR DE MÓDULO */}
-            <div style={{ display: 'flex', gap: '10px', padding: '15px', overflowX: 'auto', backgroundColor: 'white', borderBottom: '1px solid #ddd' }}>
-                {['carretilla', 'estante', 'carnicos', 'almacen'].map((mod) => (
+            {/* SELECTOR DE MÓDULO (FILTRADO SIN ALMACÉN) */}
+            <div style={{ display: 'flex', gap: '10px', padding: '15px', overflowX: 'auto', backgroundColor: 'white', borderBottom: '1px solid #ddd', flexShrink: 0 }}>
+                {['carretilla', 'estante', 'carnicos'].map((mod) => (
                     <button
                         key={mod}
-                        onClick={() => { setActiveModule(mod); clearCart(); }}
+                        onClick={() => setActiveModule(mod)} // <-- CORREGIDO: Ya no borra el carrito al cambiar
                         style={{
                             padding: '8px 16px', borderRadius: '20px', border: 'none',
                             backgroundColor: activeModule === mod ? '#2e7d32' : '#e0e0e0',
@@ -208,16 +207,16 @@ export default function Carrito() {
                 </div>
 
                 {/* COLUMNA DERECHA: EL CARRITO Y TECLADO */}
-                <div style={{ flex: 1, backgroundColor: 'white', borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', minWidth: '360px', maxWidth: '420px' }}>
+                <div style={{ flex: 1, backgroundColor: 'white', borderLeft: '1px solid #ddd', display: 'flex', flexDirection: 'column', minWidth: '340px', maxWidth: '400px', height: '100%' }}>
 
-                    <div style={{ padding: '15px 20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Cuenta Actual</h2>
+                    <div style={{ padding: '15px 20px', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                        <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Cuenta Actual</h2>
                         <button onClick={clearCart} style={{ background: 'none', border: 'none', color: '#c62828', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
                             <IconTrash /> Limpiar
                         </button>
                     </div>
 
-                    {/* LISTA DEL CARRITO */}
+                    {/* LISTA DEL CARRITO (AHORA TIENE FLEX: 1 Y SCROLL PARA QUE NO SE CORTE NADA) */}
                     <div style={{ flex: 1, overflowY: 'auto', padding: '15px 20px' }}>
                         {cart.length === 0 ? (
                             <div style={{ textAlign: 'center', color: '#aaa', marginTop: '30px' }}>
@@ -242,63 +241,63 @@ export default function Carrito() {
                         )}
                     </div>
 
-                    {/* PANEL INFERIOR: TOTAL, TECLADO Y VUELTO */}
-                    <div style={{ padding: '15px', backgroundColor: '#fafafa', borderTop: '1px solid #ddd' }}>
+                    {/* PANEL INFERIOR: TOTAL, TECLADO Y VUELTO (AHORA ES COMPACTO Y CON FLEX-SHRINK: 0) */}
+                    <div style={{ padding: '15px', backgroundColor: '#fafafa', borderTop: '1px solid #ddd', flexShrink: 0 }}>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '1.2rem' }}>
-                            <span style={{ color: '#666' }}>Total a Pagar:</span>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '1.1rem' }}>
+                            <span style={{ color: '#666', fontWeight: 'bold' }}>Total:</span>
                             <span style={{ fontWeight: 'bold', color: '#2e7d32' }}>{money(cartTotal)}</span>
                         </div>
 
                         {/* PANTALLA DE EFECTIVO */}
-                        <div style={{ backgroundColor: '#e3f2fd', padding: '10px', borderRadius: '8px', marginBottom: '10px', border: '1px solid #90caf9', display: 'flex', flexDirection: 'column' }}>
-                            <label style={{ fontSize: '0.8rem', color: '#1565c0', fontWeight: 'bold', marginBottom: '5px' }}>Efectivo Recibido:</label>
-                            <div style={{ fontSize: '2rem', fontWeight: 'bold', textAlign: 'right', color: '#0d47a1', minHeight: '40px' }}>
+                        <div style={{ backgroundColor: '#e3f2fd', padding: '8px 12px', borderRadius: '8px', marginBottom: '10px', border: '1px solid #90caf9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '0.8rem', color: '#1565c0', fontWeight: 'bold' }}>Paga con:</span>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#0d47a1', textAlign: 'right' }}>
                                 {pagoCon === '' ? '0.00' : pagoCon}
                             </div>
                         </div>
 
-                        {/* TECLADO NUMÉRICO PROFESIONAL */}
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', marginBottom: '15px' }}>
+                        {/* TECLADO NUMÉRICO COMPACTO */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', marginBottom: '10px' }}>
                             {['1', '2', '3', 'DEL'].map(k => (
-                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '15px 0', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: k === 'DEL' ? '#ffebee' : 'white', color: k === 'DEL' ? '#c62828' : '#333', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>{k}</button>
+                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '10px 0', fontSize: '1rem', fontWeight: 'bold', backgroundColor: k === 'DEL' ? '#ffebee' : 'white', color: k === 'DEL' ? '#c62828' : '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}>{k}</button>
                             ))}
                             {['4', '5', '6', 'C'].map(k => (
-                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '15px 0', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: k === 'C' ? '#ffebee' : 'white', color: k === 'C' ? '#c62828' : '#333', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>{k}</button>
+                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '10px 0', fontSize: '1rem', fontWeight: 'bold', backgroundColor: k === 'C' ? '#ffebee' : 'white', color: k === 'C' ? '#c62828' : '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}>{k}</button>
                             ))}
                             {['7', '8', '9', '00'].map(k => (
-                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '15px 0', fontSize: '1.2rem', fontWeight: 'bold', backgroundColor: 'white', color: '#333', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>{k}</button>
+                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ padding: '10px 0', fontSize: '1rem', fontWeight: 'bold', backgroundColor: 'white', color: '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}>{k}</button>
                             ))}
                             {['0', '.', 'EXACTO'].map(k => (
-                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ gridColumn: k === 'EXACTO' ? 'span 2' : 'span 1', padding: '15px 0', fontSize: k === 'EXACTO' ? '1rem' : '1.2rem', fontWeight: 'bold', backgroundColor: k === 'EXACTO' ? '#bbdefb' : 'white', color: k === 'EXACTO' ? '#0d47a1' : '#333', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>{k}</button>
+                                <button key={k} onClick={() => handleKeypadPress(k)} style={{ gridColumn: k === 'EXACTO' ? 'span 2' : 'span 1', padding: '10px 0', fontSize: k === 'EXACTO' ? '0.9rem' : '1rem', fontWeight: 'bold', backgroundColor: k === 'EXACTO' ? '#bbdefb' : 'white', color: k === 'EXACTO' ? '#0d47a1' : '#333', border: '1px solid #ddd', borderRadius: '6px', cursor: 'pointer' }}>{k}</button>
                             ))}
                         </div>
 
-                        {/* RESULTADO DEL VUELTO */}
+                        {/* RESULTADO DEL VUELTO (MÁS COMPACTO) */}
                         {pagoCon !== '' && (
-                            <div style={{ textAlign: 'center', marginBottom: '10px', padding: '10px', borderRadius: '8px', backgroundColor: faltante > 0 ? '#ffebee' : '#e8f5e9' }}>
+                            <div style={{ textAlign: 'center', marginBottom: '10px', padding: '8px', borderRadius: '8px', backgroundColor: faltante > 0 ? '#ffebee' : '#e8f5e9' }}>
                                 {faltante > 0 ? (
-                                    <div style={{ color: '#c62828' }}>
-                                        <span style={{ fontSize: '0.85rem', display: 'block' }}>Falta:</span>
-                                        <strong style={{ fontSize: '1.5rem' }}>{money(faltante)}</strong>
+                                    <div style={{ color: '#c62828', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px' }}>
+                                        <span style={{ fontSize: '0.9rem' }}>Falta:</span>
+                                        <strong style={{ fontSize: '1.2rem' }}>{money(faltante)}</strong>
                                     </div>
                                 ) : (
-                                    <div style={{ color: '#2e7d32' }}>
-                                        <span style={{ fontSize: '0.85rem', display: 'block' }}>Vuelto:</span>
-                                        <strong style={{ fontSize: '2rem' }}>{money(vuelto)}</strong>
+                                    <div style={{ color: '#2e7d32', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 10px' }}>
+                                        <span style={{ fontSize: '0.9rem' }}>Vuelto:</span>
+                                        <strong style={{ fontSize: '1.4rem' }}>{money(vuelto)}</strong>
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {/* BOTÓN DE COBRAR */}
+                        {/* BOTÓN DE COBRAR (SIEMPRE VISIBLE AHORA) */}
                         <button
                             onClick={processSale}
                             disabled={cart.length === 0 || (pagoCon !== '' && pagoNumerico < cartTotal)}
                             style={{
-                                width: '100%', padding: '15px', borderRadius: '10px', border: 'none',
+                                width: '100%', padding: '12px', borderRadius: '8px', border: 'none',
                                 backgroundColor: cart.length === 0 || (pagoCon !== '' && pagoNumerico < cartTotal) ? '#ccc' : '#2e7d32',
-                                color: 'white', fontSize: '1.2rem', fontWeight: 'bold',
+                                color: 'white', fontSize: '1.1rem', fontWeight: 'bold',
                                 cursor: cart.length === 0 || (pagoCon !== '' && pagoNumerico < cartTotal) ? 'not-allowed' : 'pointer',
                                 display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px'
                             }}
