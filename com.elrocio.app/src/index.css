@@ -1146,3 +1146,34 @@ input[type="date"] {
         box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.05);
     }
 }
+
+/* ESTILO PARA EL BLOQUE DE LA FECHA */
+.date-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: rgba(255, 255, 255, 0.15);
+    /* Fondo semi-transparente igual que los botones */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    /* Forma de píldora */
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    /* Evita que el texto se rompa en dos líneas */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* Una sombrita sutil */
+}
+
+/* Para que el icono se vea bien alineado */
+.date-block svg {
+    flex-shrink: 0;
+}
+
+/* Responsive: Si la pantalla es muy pequeña, oculta el texto y deja solo el icono */
+@media (max-width: 768px) {
+    .date-block span {
+        display: none;
+    }
+}
