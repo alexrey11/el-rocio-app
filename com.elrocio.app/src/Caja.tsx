@@ -244,30 +244,38 @@ const DateButton = ({ value, onChange }: { value: string; onChange: (v: string) 
     </label>
 );
 
+// ✨ Añadido `compact` para versión pequeña
 interface ConverterProps {
     amount: string;
     currency: Divisa;
     rate: number;
     onAmountChange: (v: string) => void;
     onCurrencyChange: (v: Divisa) => void;
+    compact?: boolean;
 }
 
-const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange }: ConverterProps) => {
+const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange, compact }: ConverterProps) => {
     const result = (parseFloat(amount) || 0) * (rate > 0 ? rate : 0);
+    const pad = compact ? '12px' : '16px';
     return (
         <div className="caja-card-anim" style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '10px',
-            padding: '16px',
-            borderRadius: '16px',
+            gap: compact ? '8px' : '10px',
+            padding: pad,
+            borderRadius: compact ? '14px' : '16px',
             background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
             border: '1px solid #fbbf24',
             boxShadow: '0 8px 24px -8px rgba(251, 191, 36, 0.4)',
+            height: '100%',
+            boxSizing: 'border-box',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#92400e' }}>
-                <Icon name="calc" size={16} />
-                <span style={{ fontSize: '0.7rem', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <Icon name="calc" size={compact ? 14 : 16} />
+                <span style={{
+                    fontSize: compact ? '0.65rem' : '0.7rem',
+                    fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                }}>
                     Conversor rápido
                 </span>
             </div>
@@ -282,10 +290,10 @@ const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange }:
                     style={{
                         ...inputReset,
                         flex: 1, minWidth: 0,
-                        padding: '10px 12px',
+                        padding: compact ? '8px 10px' : '10px 12px',
                         backgroundColor: 'white',
                         borderRadius: '10px',
-                        fontSize: '1rem',
+                        fontSize: compact ? '0.9rem' : '1rem',
                         fontWeight: 700,
                         cursor: 'text',
                     }}
@@ -295,10 +303,10 @@ const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange }:
                     onChange={(e) => onCurrencyChange(e.target.value as Divisa)}
                     style={{
                         ...inputReset,
-                        padding: '10px 12px',
+                        padding: compact ? '8px 10px' : '10px 12px',
                         backgroundColor: 'white',
                         borderRadius: '10px',
-                        fontSize: '0.9rem',
+                        fontSize: compact ? '0.82rem' : '0.9rem',
                         fontWeight: 800,
                         color: '#92400e',
                     }}
@@ -311,13 +319,13 @@ const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange }:
 
             <div style={{
                 display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
-                paddingTop: '4px',
+                paddingTop: '2px',
             }}>
-                <span style={{ fontSize: '0.72rem', color: '#92400e', fontWeight: 600 }}>
+                <span style={{ fontSize: compact ? '0.66rem' : '0.72rem', color: '#92400e', fontWeight: 600 }}>
                     {rate > 0 ? `1 ${currency} = ${rate} CUP` : 'Sin tasa configurada'}
                 </span>
                 <span style={{
-                    fontSize: '1.35rem',
+                    fontSize: compact ? '1.1rem' : '1.35rem',
                     fontWeight: 900,
                     color: '#78350f',
                     fontVariantNumeric: 'tabular-nums',
@@ -331,26 +339,39 @@ const Converter = ({ amount, currency, rate, onAmountChange, onCurrencyChange }:
 };
 
 const EquivalenceCard = ({
-    flag, label, value, rateLabel, color,
-}: { flag: string; label: string; value: string; rateLabel: string; color: string }) => (
+    flag, label, value, rateLabel, color, compact,
+}: {
+    flag: string; label: string; value: string; rateLabel: string; color: string; compact?: boolean;
+}) => (
     <div className="caja-card-anim" style={{
-        padding: '14px 16px',
+        padding: compact ? '10px 12px' : '14px 16px',
         backgroundColor: 'white',
-        borderRadius: '16px',
+        borderRadius: compact ? '12px' : '16px',
         border: '1px solid rgba(15, 23, 42, 0.06)',
         boxShadow: '0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 20px -8px rgba(15, 23, 42, 0.06)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
         textAlign: 'center',
-        minWidth: '130px',
+        minWidth: compact ? '110px' : '130px',
+        flexShrink: 0,
+        boxSizing: 'border-box',
+        height: '100%',
     }}>
-        <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+        <div style={{
+            fontSize: compact ? '0.62rem' : '0.7rem',
+            color: '#64748b', fontWeight: 700,
+            letterSpacing: '0.05em', textTransform: 'uppercase',
+        }}>
             {flag} {label}
         </div>
         <div style={{
-            fontSize: '1.2rem', fontWeight: 800, color,
-            marginTop: '6px', fontVariantNumeric: 'tabular-nums',
+            fontSize: compact ? '1rem' : '1.2rem', fontWeight: 800, color,
+            marginTop: '4px', fontVariantNumeric: 'tabular-nums',
             letterSpacing: '-0.02em',
         }}>{value}</div>
-        <div style={{ fontSize: '0.68rem', color: '#94a3b8', marginTop: '2px' }}>{rateLabel}</div>
+        <div style={{ fontSize: compact ? '0.6rem' : '0.68rem', color: '#94a3b8', marginTop: '2px' }}>{rateLabel}</div>
     </div>
 );
 
@@ -408,7 +429,7 @@ interface ListPanelProps {
     total: string;
     emptyText: string;
     emptyIcon: IconKey;
-    children: React.ReactNode;
+    children: ReactNode; // ✨ fix: React.ReactNode → ReactNode
 }
 
 const ListPanel = ({ title, icon, count, accent, total, emptyText, emptyIcon, children }: ListPanelProps) => (
@@ -469,6 +490,7 @@ export default function Caja() {
     const [convAmount, setConvAmount] = useState('');
     const [convCurrency, setConvCurrency] = useState<Divisa>('USD');
     const [activeTab, setActiveTab] = useState<Tab>('ventas');
+    const [convOpen, setConvOpen] = useState(true); // ✨ colapsable en móvil
 
     const tasas: Tasas = useLiveQuery(async (): Promise<Tasas> => {
         const s = await db.settings.get(1);
@@ -506,6 +528,7 @@ export default function Caja() {
 
     const convRate = convCurrency === 'USD' ? tasas.rateUSD : convCurrency === 'EUR' ? tasas.rateEUR : tasas.rateMLC;
     const hayEquivalencias = tasas.rateUSD > 0 || tasas.rateEUR > 0 || tasas.rateMLC > 0;
+    const convResult = convRate > 0 ? money((parseFloat(convAmount) || 0) * convRate) : '—';
 
     const renderVentas = () => d.ventas.length === 0 ? null : d.ventas.map(v => (
         <ListRow key={v.id} title={v.productName}
@@ -628,11 +651,12 @@ export default function Caja() {
 
                 {/* ═════════════ LISTAS (contenido principal) ═════════════ */}
                 <section style={{
-                    flex: 1,
+                    // ✨ Móvil: altura natural (no colapsa). Desktop/tablet: crece pero nunca baja de 360px
+                    flex: isMobile ? '0 0 auto' : 1,
+                    minHeight: isMobile ? undefined : 360,
                     padding: isMobile ? '14px' : '20px 24px',
                     display: 'flex',
                     flexDirection: 'column',
-                    minHeight: 0,
                 }}>
                     {isMobile ? (
                         <>
@@ -717,56 +741,112 @@ export default function Caja() {
                     padding: isMobile ? '0 14px 20px' : '0 24px 24px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
+                    gap: '10px',
                     borderTop: '1px dashed #e2e8f0',
-                    paddingTop: isMobile ? '16px' : '20px',
+                    paddingTop: isMobile ? '14px' : '20px',
                     marginTop: isMobile ? '0' : '4px',
                 }}>
-                    {/* Título sutil de sección */}
-                    <div style={{
-                        display: 'flex', alignItems: 'center', gap: '8px',
-                        fontSize: '0.7rem', fontWeight: 800,
-                        letterSpacing: '0.08em', textTransform: 'uppercase',
-                        color: '#94a3b8',
-                    }}>
-                        <Icon name="swap" size={14} />
-                        Herramientas de cambio
-                    </div>
+                    {/* Título solo en desktop */}
+                    {!isMobile && (
+                        <div style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            fontSize: '0.7rem', fontWeight: 800,
+                            letterSpacing: '0.08em', textTransform: 'uppercase',
+                            color: '#94a3b8',
+                        }}>
+                            <Icon name="swap" size={14} />
+                            Herramientas de cambio
+                        </div>
+                    )}
 
                     {isMobile ? (
                         <>
-                            <Converter amount={convAmount} currency={convCurrency} rate={convRate}
-                                onAmountChange={setConvAmount} onCurrencyChange={setConvCurrency} />
-                            {hayEquivalencias && (
-                                <div className="caja-scroll" style={{
-                                    display: 'flex', gap: '10px', overflowX: 'auto',
-                                    margin: '0 -14px', padding: '0 14px 4px',
+                            {/* ✨ Barra colapsable compacta */}
+                            <button
+                                onClick={() => setConvOpen(o => !o)}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    width: '100%', padding: '10px 14px',
+                                    backgroundColor: 'white',
+                                    borderRadius: '12px',
+                                    border: '1px solid #fbbf24',
+                                    cursor: 'pointer',
+                                    fontFamily: 'inherit',
+                                    boxShadow: '0 4px 12px -6px rgba(251,191,36,0.4)',
+                                }}
+                            >
+                                <span style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                    fontSize: '0.78rem', fontWeight: 800, color: '#92400e',
                                 }}>
-                                    {tasas.rateUSD > 0 && <EquivalenceCard flag="💵" label="USD" color="#0d47a1"
-                                        value={`$${(totals.ingresos / tasas.rateUSD).toFixed(2)}`}
-                                        rateLabel={`${tasas.rateUSD} CUP/USD`} />}
-                                    {tasas.rateEUR > 0 && <EquivalenceCard flag="💶" label="EUR" color="#00897b"
-                                        value={`€${(totals.ingresos / tasas.rateEUR).toFixed(2)}`}
-                                        rateLabel={`${tasas.rateEUR} CUP/EUR`} />}
-                                    {tasas.rateMLC > 0 && <EquivalenceCard flag="🏦" label="MLC" color="#c62828"
-                                        value={(totals.ingresos / tasas.rateMLC).toFixed(2)}
-                                        rateLabel={`${tasas.rateMLC} CUP/MLC`} />}
+                                    <Icon name="swap" size={14} /> Conversor rápido
+                                </span>
+                                <span style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                    fontSize: '0.85rem', fontWeight: 800, color: '#78350f',
+                                    fontVariantNumeric: 'tabular-nums',
+                                }}>
+                                    {convResult}
+                                    <span style={{
+                                        display: 'inline-block',
+                                        transform: convOpen ? 'rotate(180deg)' : 'none',
+                                        transition: 'transform .2s',
+                                        fontSize: '0.7rem',
+                                    }}>▾</span>
+                                </span>
+                            </button>
+
+                            {convOpen && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <Converter compact amount={convAmount} currency={convCurrency} rate={convRate}
+                                        onAmountChange={setConvAmount} onCurrencyChange={setConvCurrency} />
+                                    {hayEquivalencias && (
+                                        <div className="caja-scroll" style={{
+                                            display: 'flex', gap: '8px', overflowX: 'auto',
+                                            margin: '0 -14px', padding: '0 14px 4px',
+                                        }}>
+                                            {tasas.rateUSD > 0 && <EquivalenceCard compact flag="💵" label="USD" color="#0d47a1"
+                                                value={`$${(totals.ingresos / tasas.rateUSD).toFixed(2)}`}
+                                                rateLabel={`${tasas.rateUSD} CUP/USD`} />}
+                                            {tasas.rateEUR > 0 && <EquivalenceCard compact flag="💶" label="EUR" color="#00897b"
+                                                value={`€${(totals.ingresos / tasas.rateEUR).toFixed(2)}`}
+                                                rateLabel={`${tasas.rateEUR} CUP/EUR`} />}
+                                            {tasas.rateMLC > 0 && <EquivalenceCard compact flag="🏦" label="MLC" color="#c62828"
+                                                value={(totals.ingresos / tasas.rateMLC).toFixed(2)}
+                                                rateLabel={`${tasas.rateMLC} CUP/MLC`} />}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </>
                     ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr 1fr 1fr', gap: '12px' }}>
-                            <Converter amount={convAmount} currency={convCurrency} rate={convRate}
-                                onAmountChange={setConvAmount} onCurrencyChange={setConvCurrency} />
-                            {tasas.rateUSD > 0 && <EquivalenceCard flag="💵" label="Total USD" color="#0d47a1"
-                                value={`$${(totals.ingresos / tasas.rateUSD).toFixed(2)}`}
-                                rateLabel={`${tasas.rateUSD} CUP/USD`} />}
-                            {tasas.rateEUR > 0 && <EquivalenceCard flag="💶" label="Total EUR" color="#00897b"
-                                value={`€${(totals.ingresos / tasas.rateEUR).toFixed(2)}`}
-                                rateLabel={`${tasas.rateEUR} CUP/EUR`} />}
-                            {tasas.rateMLC > 0 && <EquivalenceCard flag="🏦" label="Total MLC" color="#c62828"
-                                value={(totals.ingresos / tasas.rateMLC).toFixed(2)}
-                                rateLabel={`${tasas.rateMLC} CUP/MLC`} />}
+                        // ✨ Desktop/tablet: flex-wrap (nunca desborda, se adapta a anchos intermedios)
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'stretch' }}>
+                            <div style={{ flex: '1 1 280px', minWidth: 0 }}>
+                                <Converter amount={convAmount} currency={convCurrency} rate={convRate}
+                                    onAmountChange={setConvAmount} onCurrencyChange={setConvCurrency} />
+                            </div>
+                            {tasas.rateUSD > 0 && (
+                                <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+                                    <EquivalenceCard flag="💵" label="Total USD" color="#0d47a1"
+                                        value={`$${(totals.ingresos / tasas.rateUSD).toFixed(2)}`}
+                                        rateLabel={`${tasas.rateUSD} CUP/USD`} />
+                                </div>
+                            )}
+                            {tasas.rateEUR > 0 && (
+                                <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+                                    <EquivalenceCard flag="💶" label="Total EUR" color="#00897b"
+                                        value={`€${(totals.ingresos / tasas.rateEUR).toFixed(2)}`}
+                                        rateLabel={`${tasas.rateEUR} CUP/EUR`} />
+                                </div>
+                            )}
+                            {tasas.rateMLC > 0 && (
+                                <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+                                    <EquivalenceCard flag="🏦" label="Total MLC" color="#c62828"
+                                        value={(totals.ingresos / tasas.rateMLC).toFixed(2)}
+                                        rateLabel={`${tasas.rateMLC} CUP/MLC`} />
+                                </div>
+                            )}
                         </div>
                     )}
                 </section>

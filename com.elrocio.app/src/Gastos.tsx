@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from './db';
-import type { JSX, ReactNode } from 'react';
+import type { JSX } from 'react';
 
 // ═══════════════════════════════════════════════════════════
 // TYPES
@@ -25,7 +25,7 @@ const CATEGORIA_LABELS: Record<Categoria, string> = {
 const GASTOS_VACIOS: Gasto[] = [];
 
 // ═══════════════════════════════════════════════════════════
-// UTILS
+// UTILS (igual que antes)
 // ═══════════════════════════════════════════════════════════
 const getTodayLocalString = (): string => {
     const n = new Date();
@@ -67,7 +67,7 @@ const useIsMobile = (breakpoint = 900): boolean => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// ICONS
+// ICONS (igual)
 // ═══════════════════════════════════════════════════════════
 type IconKey = 'back' | 'trash' | 'wallet' | 'calendar' | 'plus' | 'close' | 'inbox';
 
@@ -90,7 +90,7 @@ const Icon = ({ name, size = 20 }: { name: IconKey; size?: number }) => {
 };
 
 // ═══════════════════════════════════════════════════════════
-// SHARED STYLES
+// SHARED STYLES (igual)
 // ═══════════════════════════════════════════════════════════
 const GlobalStyles = () => (
     <style>{`
@@ -128,7 +128,7 @@ const fieldStyle = {
 } as const;
 
 // ═══════════════════════════════════════════════════════════
-// SUBCOMPONENTS
+// SUBCOMPONENTS (igual)
 // ═══════════════════════════════════════════════════════════
 const EmptyState = ({ title, subtitle }: { title: string; subtitle?: string }) => (
     <div style={{
@@ -171,6 +171,169 @@ const PeriodSelector = ({ value, onChange }: { value: Periodo; onChange: (v: Per
         </div>
     );
 };
+
+// ═══════════════════════════════════════════════════════════
+// ✨ FORM — AHORA FUERA DEL COMPONENTE PADRE
+// ═══════════════════════════════════════════════════════════
+interface FormProps {
+    compact?: boolean;
+    descripcion: string;
+    setDescripcion: (v: string) => void;
+    monto: string;
+    setMonto: (v: string) => void;
+    categoria: Categoria;
+    setCategoria: (v: Categoria) => void;
+    onSubmit: (e: FormEvent) => void;
+}
+
+const GastoForm = ({
+    compact, descripcion, setDescripcion, monto, setMonto,
+    categoria, setCategoria, onSubmit,
+}: FormProps) => (
+    <form onSubmit={onSubmit} style={{
+        display: 'flex', flexDirection: 'column', gap: '14px',
+        padding: compact ? '0' : '20px',
+        backgroundColor: compact ? 'transparent' : 'white',
+        borderRadius: compact ? 0 : '16px',
+        border: compact ? 'none' : '1px solid rgba(15, 23, 42, 0.06)',
+        boxShadow: compact ? 'none' : '0 1px 2px rgba(15,23,42,.04), 0 8px 20px -8px rgba(15,23,42,.06)',
+    }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
+            <div style={{
+                width: '30px', height: '30px', borderRadius: '9px',
+                backgroundColor: '#ecfdf5', color: '#059669',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+                <Icon name="plus" size={16} />
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>Nuevo Gasto</span>
+        </div>
+
+        <label style={labelStyle}>
+            Descripción
+            <input className="gastos-input" required value={descripcion}
+                onChange={(e) => setDescripcion(e.target.value)}
+                placeholder="Ej: Pasaje al mercado"
+                style={fieldStyle} />
+        </label>
+
+        <label style={labelStyle}>
+            Monto
+            <input className="gastos-input" required type="number" inputMode="decimal"
+                step="0.01" min="0.01" value={monto}
+                onChange={(e) => setMonto(e.target.value)}
+                placeholder="0.00"
+                style={{ ...fieldStyle, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }} />
+        </label>
+
+        <label style={labelStyle}>
+            Categoría
+            <select className="gastos-input" value={categoria}
+                onChange={(e) => setCategoria(e.target.value as Categoria)}
+                style={fieldStyle}>
+                {CATEGORIAS.map(c => <option key={c} value={c}>{CATEGORIA_LABELS[c]}</option>)}
+            </select>
+        </label>
+
+        <button type="submit" style={{
+            padding: '14px', borderRadius: '12px', border: 'none',
+            background: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
+            color: 'white', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
+            boxShadow: '0 4px 12px -2px rgba(5, 150, 105, 0.4)',
+            transition: 'transform .15s, box-shadow .15s',
+        }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(.98)')}
+            onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+        >
+            Agregar Gasto
+        </button>
+    </form>
+);
+
+// ═══════════════════════════════════════════════════════════
+// ✨ LISTA — TAMBIÉN FUERA
+// ═══════════════════════════════════════════════════════════
+interface ListaProps {
+    loading: boolean;
+    lista: Gasto[];
+    onDelete: (id: number) => void;
+}
+
+const GastoLista = ({ loading, lista, onDelete }: ListaProps) => (
+    <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        backgroundColor: 'white', borderRadius: '16px',
+        border: '1px solid rgba(15, 23, 42, 0.06)',
+        boxShadow: '0 1px 2px rgba(15,23,42,.04), 0 8px 20px -8px rgba(15,23,42,.06)',
+        overflow: 'hidden', minHeight: 0,
+    }}>
+        <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '14px 16px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#fafbfc',
+        }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                    width: '32px', height: '32px', borderRadius: '9px',
+                    backgroundColor: '#f5f3ff', color: '#7c3aed',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                    <Icon name="wallet" size={16} />
+                </div>
+                <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>Gastos del período</div>
+                    <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600 }}>
+                        {lista.length} registro{lista.length !== 1 ? 's' : ''}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
+            {loading ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="gastos-skeleton" style={{ height: '64px', marginBottom: '10px' }} />
+                ))
+            ) : lista.length === 0 ? (
+                <EmptyState title="Sin gastos registrados"
+                    subtitle="Usa el formulario para agregar uno." />
+            ) : lista.map(g => (
+                <div key={g.id} className="gastos-item" style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '14px 16px', backgroundColor: 'white', borderRadius: '12px',
+                    border: '1px solid rgba(15,23,42,0.06)',
+                    borderLeft: '4px solid #a855f7',
+                    marginBottom: '10px', transition: 'background .15s ease',
+                }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {g.description}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '3px' }}>
+                            🏷️ {g.category.charAt(0).toUpperCase() + g.category.slice(1)} · 📅 {formatDate(g.date)} · ⏰ {formatHora(g.date)}
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                        <strong style={{ color: '#dc2626', fontSize: '1rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
+                            -{money(g.amount)}
+                        </strong>
+                        <button onClick={() => onDelete(g.id!)} style={{
+                            width: '34px', height: '34px', borderRadius: '10px',
+                            border: 'none', backgroundColor: '#f8fafc', color: '#94a3b8',
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            transition: 'all .15s ease',
+                        }}
+                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; e.currentTarget.style.color = '#dc2626'; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.color = '#94a3b8'; }}
+                        >
+                            <Icon name="trash" size={16} />
+                        </button>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
 
 // ═══════════════════════════════════════════════════════════
 // MAIN
@@ -224,145 +387,6 @@ export default function Gastos() {
         if (!window.confirm('¿Eliminar este gasto?')) return;
         await db.expenses.delete(id);
     };
-
-    // ══════════ FORM ══════════
-    const Form = ({ compact }: { compact?: boolean }) => (
-        <form onSubmit={agregarGasto} style={{
-            display: 'flex', flexDirection: 'column', gap: '14px',
-            padding: compact ? '0' : '20px',
-            backgroundColor: compact ? 'transparent' : 'white',
-            borderRadius: compact ? 0 : '16px',
-            border: compact ? 'none' : '1px solid rgba(15, 23, 42, 0.06)',
-            boxShadow: compact ? 'none' : '0 1px 2px rgba(15,23,42,.04), 0 8px 20px -8px rgba(15,23,42,.06)',
-        }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
-                <div style={{
-                    width: '30px', height: '30px', borderRadius: '9px',
-                    backgroundColor: '#ecfdf5', color: '#059669',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                    <Icon name="plus" size={16} />
-                </div>
-                <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>Nuevo Gasto</span>
-            </div>
-
-            <label style={labelStyle}>
-                Descripción
-                <input className="gastos-input" required value={descripcion}
-                    onChange={(e) => setDescripcion(e.target.value)}
-                    placeholder="Ej: Pasaje al mercado"
-                    style={fieldStyle} />
-            </label>
-
-            <label style={labelStyle}>
-                Monto
-                <input className="gastos-input" required type="number" inputMode="decimal"
-                    step="0.01" min="0.01" value={monto}
-                    onChange={(e) => setMonto(e.target.value)}
-                    placeholder="0.00"
-                    style={{ ...fieldStyle, fontVariantNumeric: 'tabular-nums', fontWeight: 700 }} />
-            </label>
-
-            <label style={labelStyle}>
-                Categoría
-                <select className="gastos-input" value={categoria}
-                    onChange={(e) => setCategoria(e.target.value as Categoria)}
-                    style={fieldStyle}>
-                    {CATEGORIAS.map(c => <option key={c} value={c}>{CATEGORIA_LABELS[c]}</option>)}
-                </select>
-            </label>
-
-            <button type="submit" style={{
-                padding: '14px', borderRadius: '12px', border: 'none',
-                background: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
-                color: 'white', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
-                boxShadow: '0 4px 12px -2px rgba(5, 150, 105, 0.4)',
-                transition: 'transform .15s, box-shadow .15s',
-            }}
-                onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(.98)')}
-                onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-                Agregar Gasto
-            </button>
-        </form>
-    );
-
-    // ══════════ LISTA ══════════
-    const Lista = () => (
-        <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
-            backgroundColor: 'white', borderRadius: '16px',
-            border: '1px solid rgba(15, 23, 42, 0.06)',
-            boxShadow: '0 1px 2px rgba(15,23,42,.04), 0 8px 20px -8px rgba(15,23,42,.06)',
-            overflow: 'hidden', minHeight: 0,
-        }}>
-            <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '14px 16px', borderBottom: '1px solid #f1f5f9', backgroundColor: '#fafbfc',
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{
-                        width: '32px', height: '32px', borderRadius: '9px',
-                        backgroundColor: '#f5f3ff', color: '#7c3aed',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
-                        <Icon name="wallet" size={16} />
-                    </div>
-                    <div>
-                        <div style={{ fontWeight: 800, fontSize: '0.92rem', color: '#0f172a' }}>Gastos del período</div>
-                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600 }}>
-                            {lista.length} registro{lista.length !== 1 ? 's' : ''}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div style={{ flex: 1, overflowY: 'auto', padding: '14px' }}>
-                {loading ? (
-                    Array.from({ length: 3 }).map((_, i) => (
-                        <div key={i} className="gastos-skeleton" style={{ height: '64px', marginBottom: '10px' }} />
-                    ))
-                ) : lista.length === 0 ? (
-                    <EmptyState title="Sin gastos registrados"
-                        subtitle="Usa el formulario para agregar uno." />
-                ) : lista.map(g => (
-                    <div key={g.id} className="gastos-item" style={{
-                        display: 'flex', alignItems: 'center', gap: '12px',
-                        padding: '14px 16px', backgroundColor: 'white', borderRadius: '12px',
-                        border: '1px solid rgba(15,23,42,0.06)',
-                        borderLeft: '4px solid #a855f7',
-                        marginBottom: '10px', transition: 'background .15s ease',
-                    }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.95rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                {g.description}
-                            </div>
-                            <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '3px' }}>
-                                🏷️ {g.category.charAt(0).toUpperCase() + g.category.slice(1)} · 📅 {formatDate(g.date)} · ⏰ {formatHora(g.date)}
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
-                            <strong style={{ color: '#dc2626', fontSize: '1rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>
-                                -{money(g.amount)}
-                            </strong>
-                            <button onClick={() => eliminarGasto(g.id!)} style={{
-                                width: '34px', height: '34px', borderRadius: '10px',
-                                border: 'none', backgroundColor: '#f8fafc', color: '#94a3b8',
-                                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                transition: 'all .15s ease',
-                            }}
-                                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; e.currentTarget.style.color = '#dc2626'; }}
-                                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#f8fafc'; e.currentTarget.style.color = '#94a3b8'; }}
-                            >
-                                <Icon name="trash" size={16} />
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
 
     // ══════════ RENDER ══════════
     return (
@@ -460,10 +484,15 @@ export default function Gastos() {
             }}>
                 {!isMobile && (
                     <div style={{ width: '340px', flexShrink: 0, overflowY: 'auto' }}>
-                        <Form />
+                        <GastoForm
+                            descripcion={descripcion} setDescripcion={setDescripcion}
+                            monto={monto} setMonto={setMonto}
+                            categoria={categoria} setCategoria={setCategoria}
+                            onSubmit={agregarGasto}
+                        />
                     </div>
                 )}
-                <Lista />
+                <GastoLista loading={loading} lista={lista} onDelete={eliminarGasto} />
             </div>
 
             {/* MODAL FORM MÓVIL */}
@@ -476,7 +505,7 @@ export default function Gastos() {
                         width: '100%', backgroundColor: 'white',
                         borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
                         padding: '20px 16px 24px', maxHeight: '90vh', overflowY: 'auto',
-                        animation: 'fadeUp .3s ease',
+                        animation: 'fadeUp .3s ease', position: 'relative',
                     }}>
                         <div style={{ width: '40px', height: '4px', borderRadius: '2px', backgroundColor: '#cbd5e1', margin: '0 auto 16px' }} />
                         <button onClick={() => setFormOpen(false)} style={{
@@ -487,7 +516,13 @@ export default function Gastos() {
                         }}>
                             <Icon name="close" size={18} />
                         </button>
-                        <Form compact />
+                        <GastoForm
+                            compact
+                            descripcion={descripcion} setDescripcion={setDescripcion}
+                            monto={monto} setMonto={setMonto}
+                            categoria={categoria} setCategoria={setCategoria}
+                            onSubmit={agregarGasto}
+                        />
                     </div>
                 </div>
             )}
