@@ -30,8 +30,8 @@ export default function Header({ currentModule, setCurrentModule, cartCount, onC
                                 key={mod.id}
                                 onClick={() => setCurrentModule(mod.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${isActive
-                                        ? 'bg-blue-100 text-blue-700'
-                                        : 'text-gray-500 hover:bg-gray-100'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'text-gray-500 hover:bg-gray-100'
                                     }`}
                             >
                                 <Icon size={20} />

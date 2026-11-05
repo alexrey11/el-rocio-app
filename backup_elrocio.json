@@ -1,0 +1,105 @@
+{
+  "version": 2,
+  "date": "2026-10-02T16:38:25.328Z",
+  "products": [
+    {
+      "id": 1,
+      "name": "Carne de puerco",
+      "stock": 123,
+      "unit": "libras",
+      "cost": 950,
+      "sale": 1200,
+      "accent": "bg-red-100",
+      "moduleId": "carnicos"
+    },
+    {
+      "id": 2,
+      "name": "Agua",
+      "stock": 198,
+      "unit": "unidades",
+      "cost": 100,
+      "sale": 150,
+      "accent": "bg-blue-100",
+      "moduleId": "estante"
+    },
+    {
+      "id": 3,
+      "name": "Pollo",
+      "stock": 600,
+      "unit": "libras",
+      "cost": 700,
+      "sale": 850,
+      "accent": "bg-yellow-100",
+      "moduleId": "carnicos"
+    },
+    {
+      "id": 4,
+      "name": "Fruta",
+      "stock": 199,
+      "unit": "unidades",
+      "cost": 150,
+      "sale": 500,
+      "accent": "bg-green-100",
+      "moduleId": "carretilla"
+    }
+  ],
+  "sales": [
+    {
+      "id": 1,
+      "productId": 1,
+      "productName": "Carne de puerco",
+      "quantity": 1,
+      "total": 1200,
+      "profit": 250,
+      "date": "2026-09-30T21:20:45.128Z",
+      "moduleId": "carnicos",
+      "unit": "libras"
+    },
+    {
+      "id": 2,
+      "productId": 2,
+      "productName": "Agua",
+      "quantity": 1,
+      "total": 150,
+      "profit": 50,
+      "date": "2026-09-30T21:20:45.128Z",
+      "moduleId": "estante",
+      "unit": "unidades"
+    },
+    {
+      "id": 3,
+      "productId": 1,
+      "productName": "Carne de puerco",
+      "quantity": 1,
+      "total": 1200,
+      "profit": 250,
+      "date": "2026-10-01T12:45:11.025Z",
+      "moduleId": "carnicos",
+      "unit": "libras"
+    },
+    {
+      "id": 4,
+      "productId": 2,
+      "productName": "Agua",
+      "quantity": 1,
+      "total": 150,
+      "profit": 50,
+      "date": "2026-10-01T12:45:11.025Z",
+      "moduleId": "estante",
+      "unit": "unidades"
+    },
+    {
+      "id": 5,
+      "productId": 4,
+      "productName": "Fruta",
+      "quantity": 1,
+      "total": 500,
+      "profit": 350,
+      "date": "2026-10-01T12:45:11.025Z",
+      "moduleId": "carretilla",
+      "unit": "unidades"
+    }
+  ],
+  "wastes": [],
+  "transfers": []
+}

@@ -9,6 +9,9 @@ export interface Product {
     sale: number;
     accent: string;
     moduleId: string;
+    // NUEVOS (se usarán en módulos 3-5)
+    minStock?: number;
+    barcode?: string;
 }
 
 export interface Sale {
@@ -21,6 +24,13 @@ export interface Sale {
     date: string;
     moduleId: string;
     unit: string;
+    paymentMethod?: 'efectivo' | 'transferencia' | 'mixto';
+    cashAmount?: number;
+    transferAmount?: number;
+    // NUEVOS (módulo 5)
+    currency?: 'CUP' | 'USD' | 'EUR' | 'MLC';
+    amountOriginal?: number;
+    rateUsed?: number;
 }
 
 export interface Waste {
@@ -32,9 +42,9 @@ export interface Waste {
     date: string;
     moduleId: string;
     unit: string;
+    motivo?: string;
 }
 
-// NUEVA TABLA: Para registrar los traspasos del almacén
 export interface Transfer {
     id?: number;
     productId: number;
@@ -46,23 +56,94 @@ export interface Transfer {
     unit: string;
 }
 
+export interface Expense {
+    id?: number;
+    date: string;
+    description: string;
+    category: string;
+    amount: number;
+}
+
+export interface Settings {
+    id: number;
+    rateUSD: number;
+    rateEUR: number;
+    rateMLC: number;
+    updatedAt: string;
+    // NUEVOS — seguridad
+    pinHash?: string;
+    pinEnabled?: boolean;
+    // NUEVOS — backup
+    lastBackupAt?: string;
+    autoBackupEnabled?: boolean;
+    // NUEVOS — preferencias
+    darkMode?: boolean;
+}
+
+// NUEVO — cierre de caja (módulo 2)
+export interface Cierre {
+    id?: number;
+    date: string;               // fecha del día cerrado YYYY-MM-DD
+    closedAt: string;           // ISO timestamp del momento del cierre
+    totalVentas: number;
+    totalGanancias: number;
+    totalGastos: number;
+    totalMermas: number;
+    efectivoEsperado: number;   // calculado
+    efectivoReal: number;       // lo que el usuario contó
+    diferencia: number;         // real - esperado
+    notas?: string;
+}
+
 class ElRocioDB extends Dexie {
     products!: Table<Product, number>;
     sales!: Table<Sale, number>;
     wastes!: Table<Waste, number>;
-    transfers!: Table<Transfer, number>; // <-- Añadido
+    transfers!: Table<Transfer, number>;
+    expenses!: Table<Expense, number>;
+    settings!: Table<Settings, number>;
+    cierres!: Table<Cierre, number>;
 
     constructor() {
-        super('ElRocioDatabase');
+        super('ElRocioDB');
+
         this.version(1).stores({
             products: '++id, name, moduleId',
-            sales: '++id, productId, date, moduleId',
-            wastes: '++id, productId, date, moduleId'
+            sales: '++id, date, productId',
+            wastes: '++id, date, productId',
+            transfers: '++id, date',
+            expenses: '++id, date',
+            settings: 'id',
         });
 
-        // Versión 2: Añadimos la tabla de traspasos sin perder los datos anteriores
         this.version(2).stores({
-            transfers: '++id, productId, date, fromModule, toModule'
+            products: '++id, name, moduleId',
+            sales: '++id, date, productId, moduleId',
+            wastes: '++id, date, productId, moduleId',
+            transfers: '++id, date',
+            expenses: '++id, date',
+            settings: 'id',
+        });
+
+        // v3: índices optimizados + barcode
+        this.version(3).stores({
+            products: '++id, name, moduleId, barcode',
+            sales: '++id, date, productId, moduleId, [date+moduleId]',
+            wastes: '++id, date, productId, moduleId, [date+moduleId]',
+            transfers: '++id, date',
+            expenses: '++id, date',
+            settings: 'id',
+        });
+
+        // v5: cierre de caja
+        this.version(5).stores({
+            products: '++id, name, moduleId, barcode',
+            sales: '++id, date, productId, moduleId, [date+moduleId]',
+            wastes: '++id, date, productId, moduleId, [date+moduleId]',
+            transfers: '++id, date',
+            expenses: '++id, date',
+            settings: 'id',
+            cierres: '++id, date',
         });
     }
 }
